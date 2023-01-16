@@ -9,7 +9,7 @@ Test Runner Package is a simple solution to define and run tests for a PHP libra
 You can simply install this package by running the following command:
 
 ```shell
-saeghe add https://github.com/saeghe/test-runner.git
+phpkg add https://github.com/php-repos/test-runner.git
 ```
 
 ## Usage
@@ -23,6 +23,8 @@ In your files, you can simply define tests by calling the `test` function.
 The signature of the `test` function is like so:
 
 ```php
+use function PhpRepos\TestRunner\Runner\test;
+
 function test(string $title, Closure $case, ?Closure $before = null, ?Closure $after = null, ?Closure $finally = null)
 ```
 
@@ -39,6 +41,8 @@ The `case` is a closure that should contain your main test functionality.
 Example:
 
 ```php
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should return true when the string starts with the given substring',
     case: function () {
@@ -54,6 +58,8 @@ Sometimes you may need to do some stuff before starting your tests.
 In this case, you can use the `before` parameter to define a closure that will be run before running your `case`.
 
 ```php
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should assert directory exists',
     case: function () {
@@ -69,6 +75,8 @@ It may be needed to pass some variables from the `before` to the `case`.
 You can pass variables by returning them from the `before` closure:
 
 ```php
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should assert directory exists',
     case: function ($directory) {
@@ -83,6 +91,27 @@ test(
 );
 ```
 
+If you need to pass more than one variable from the `before` to the `case`, you can return an array:
+
+```php
+use function PhpRepos\TestRunner\Runner\test;
+
+test(
+    title: 'it should assert directory and file exist',
+    case: function (Directory $directory, File $file) {
+        assert(true === file_exists($directory));
+        assert(true === file_exists($file));
+    },
+    before: function () {
+        $directory = __DIR__ . '/TestDirectory' 
+        mkdir($directory);
+        $file = $directory->file('filename')->create('file content');
+        
+        return [$directory, $file];
+    }
+);
+```
+
 #### after
 
 Just like the `before`, you may need to execute some functions after the test `case` finished successfully.
@@ -90,6 +119,8 @@ For example, you may need to clean up some files created during your test run.
 In this case, you can use the `after` closure:
 
 ```php
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should assert directory exists',
     case: function () {
@@ -153,7 +184,7 @@ test(
 ### Build and Run
 
 When you build your project, your tests also will get built.
-As you can see in the `saeghe.config.json` file, there is an `executable` section in this file.
+As you can see in the `phpkg.config.json` file, there is an `executable` section in this file.
 This section will get used to make a link file named `test-runner` to the Test Runner's `run` file.
 Therefore, you can run your tests after the build by running:
 

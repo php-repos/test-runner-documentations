@@ -157,6 +157,26 @@ test(
 );
 ```
 
+If the `after` hook needs inputs and the `case` does not return any value, outputs of the `before` hook will be passed to the `after` hook directly.
+
+```php
+test(
+    title: 'it should pass data from before to after',
+    case: function () {
+        assert_true(true);
+    },
+    before: function () {
+        $directory = __DIR__ . '/TestDirectory' 
+        mkdir($directory);
+        
+        return $directory
+    },
+    after: function ($directory) {
+        unlink($directory);
+    }
+);
+```
+
 #### finally
 
 In some tests, you may need to do some stuff even when a test fails.

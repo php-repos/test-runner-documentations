@@ -2,9 +2,21 @@
 
 ## Introduction
 
-Test Runner Package is a simple solution to define and run tests for a PHP library.
+Test Runner Package is a simple solution to define and run tests for a PHP library. You can either add it as your project dependency or simply use `run` command to use it as a tool.
 
 ## Installation
+
+### As a tool
+
+There is no installation required when using `test-runner` as a tool.
+
+> **Note**  
+> When you use the `test-runner` as a tool, you still need writing your tests using the `PhpRepos\TestRunner\Runner\test` and assert using `PhpRepos\TestRunner\Assertions`.
+> While doing so, your IDE may not be able to resolve their definition.
+> There will not be any problem when running as `test-runner` load those files before running tests.
+> There will soon be some extensions for each IDE to be able to resolve those definitions.
+
+### As a dependency
 
 You can simply install this package by running the following command:
 
@@ -41,13 +53,14 @@ The `case` is a closure that should contain your main test functionality.
 Example:
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
 use function PhpRepos\TestRunner\Runner\test;
 
 test(
     title: 'it should return true when the string starts with the given substring',
     case: function () {
-        assert(true === str_starts_with('Hello World', 'Hello'));
-        assert(false === str_starts_with('Hello World', 'World'));
+        assert_true(str_starts_with('Hello World', 'Hello'));
+        assert_false(str_starts_with('Hello World', 'World'));
     }
 );
 ```
@@ -58,12 +71,13 @@ Sometimes you may need to do some stuff before starting your tests.
 In this case, you can use the `before` parameter to define a closure that will be run before running your `case`.
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
 use function PhpRepos\TestRunner\Runner\test;
 
 test(
     title: 'it should assert directory exists',
     case: function () {
-        assert(true === file_exists(__DIR__ . '/TestDirectory'));
+        assert_true(file_exists(__DIR__ . '/TestDirectory'));
     },
     before: function () {
         mkdir(__DIR__ . '/TestDirectory');
@@ -75,12 +89,13 @@ It may be needed to pass some variables from the `before` to the `case`.
 You can pass variables by returning them from the `before` closure:
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
 use function PhpRepos\TestRunner\Runner\test;
 
 test(
     title: 'it should assert directory exists',
     case: function ($directory) {
-        assert(true === file_exists($directory));
+        assert_true(file_exists($directory));
     },
     before: function () {
         $directory = __DIR__ . '/TestDirectory' 
@@ -94,13 +109,14 @@ test(
 If you need to pass more than one variable from the `before` to the `case`, you can return an array:
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
 use function PhpRepos\TestRunner\Runner\test;
 
 test(
     title: 'it should assert directory and file exist',
     case: function (Directory $directory, File $file) {
-        assert(true === file_exists($directory));
-        assert(true === file_exists($file));
+        assert_true(file_exists($directory));
+        assert_true(file_exists($file));
     },
     before: function () {
         $directory = __DIR__ . '/TestDirectory' 
@@ -119,12 +135,13 @@ For example, you may need to clean up some files created during your test run.
 In this case, you can use the `after` closure:
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
 use function PhpRepos\TestRunner\Runner\test;
 
 test(
     title: 'it should assert directory exists',
     case: function () {
-        assert(true === file_exists(__DIR__ . '/TestDirectory'));
+        assert_true(file_exists(__DIR__ . '/TestDirectory'));
     },
     before: function () {
         mkdir(__DIR__ . '/TestDirectory');
@@ -138,10 +155,13 @@ test(
 And of course, you can pass variables from the `case` to the `after` functions:
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should assert directory exists',
     case: function ($directory) {
-        assert(true === file_exists($directory));
+        assert_true(file_exists($directory));
         
         return $directory;
     },
@@ -160,6 +180,9 @@ test(
 If the `after` hook needs inputs and the `case` does not return any value, outputs of the `before` hook will be passed to the `after` hook directly.
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should pass data from before to after',
     case: function () {
@@ -184,10 +207,13 @@ For this case, you can use the `finally` command.
 Test runner always runs this function after running the `case`:
 
 ```php
+use function PhpRepos\TestRunner\Assertions;
+use function PhpRepos\TestRunner\Runner\test;
+
 test(
     title: 'it should assert directory not exists',
     case: function () {
-        assert(false === file_exists(__DIR__ . '/TestDirectory'));
+        assert_false(file_exists(__DIR__ . '/TestDirectory'));
     },
     before: function () {
         mkdir(__DIR__ . '/TestDirectory');
@@ -203,12 +229,25 @@ test(
 
 ### Build and Run
 
+#### As a tool
+
+There is no extra step required while using `test-runner` as a tool because `phpkg` will take care of everything. However, you need to `build` your project before running tests. Run:
+
+```bash
+phpkg build
+cd builds/development
+phpkg run https://github.com/php-repos/test-runner.git
+```
+
+#### As a dependency
+
 When you build your project, your tests also will get built.
 As you can see in the `phpkg.config.json` file, there is an `executable` section in this file.
 This section will get used to make a link file named `test-runner` to the Test Runner's `run` file.
 Therefore, you can run your tests after the build by running:
 
 ```shell
+phpkg build
 cd build/development
 ./test-runner
 ```
